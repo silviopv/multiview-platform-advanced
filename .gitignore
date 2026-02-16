@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+*.log
+recordings/
+docker/nginx/ssl/*.pem
+docker/nginx/ssl/*.key
+postgres-data/
+prometheus-data/
+grafana-data/
+.DS_Store

@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  password      String
+  role          Role     @default(USER)
+  language      String   @default("pt-BR")
+  avatar        String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  streams       Stream[]
+  layouts       Layout[]
+  recordings    Recording[]
+  notifications Notification[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Stream {
+  id          String       @id @default(uuid())
+  name        String
+  url         String
+  protocol    Protocol
+  isActive    Boolean      @default(true)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order       Int          @default(0)
+  tags        String[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  recordings  Recording[]
+  notifications Notification[]
+  layoutItems LayoutItem[]
+}
+
+model Layout {
+  id        String       @id @default(uuid())
+  name      String
+  grid      String
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isDefault Boolean      @default(false)
+  config    Json?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  items     LayoutItem[]
+}
+
+model LayoutItem {
+  id        String  @id @default(uuid())
+  layoutId  String
+  layout    Layout  @relation(fields: [layoutId], references: [id], onDelete: Cascade)
+  streamId  String?
+  stream    Stream? @relation(fields: [streamId], references: [id], onDelete: SetNull)
+  position  Int
+  row       Int
+  col       Int
+  rowSpan   Int     @default(1)
+  colSpan   Int     @default(1)
+  audioOn   Boolean @default(false)
+}
+
+model Recording {
+  id          String          @id @default(uuid())
+  streamId    String
+  stream      Stream          @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  format      RecordingFormat @default(MP4)
+  status      RecordingStatus @default(PENDING)
+  filePath    String?
+  fileSize    BigInt?
+  duration    Int?
+  storageType StorageType     @default(LOCAL)
+  storageUrl  String?
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  endedAt     DateTime?
+  error       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model Notification {
+  id        String             @id @default(uuid())
+  type      NotificationType
+  message   String
+  streamId  String?
+  stream    Stream?            @relation(fields: [streamId], references: [id], onDelete: SetNull)
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isRead    Boolean            @default(false)
+  metadata  Json?
+  createdAt DateTime           @default(now())
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Protocol {
+  SRT
+  RTMP
+  RTMPS
+  RTSP
+  HLS
+}
+
+enum RecordingFormat {
+  MP4
+  MKV
+}
+
+enum RecordingStatus {
+  PENDING
+  SCHEDULED
+  RECORDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum StorageType {
+  LOCAL
+  S3
+  GOOGLE_DRIVE
+}
+
+enum NotificationType {
+  STREAM_ONLINE
+  STREAM_OFFLINE
+  RECORDING_STARTED
+  RECORDING_COMPLETED
+  RECORDING_FAILED
+  SYSTEM
+}
