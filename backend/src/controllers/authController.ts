@@ -59,9 +59,18 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
+    console.log(`Tentativa de login para: ${email}`);
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || !user.isActive) {
+    
+    if (!user) {
+      console.log(`Usuário não encontrado: ${email}`);
       res.status(401).json({ error: 'Credenciais inválidas' });
+      return;
+    }
+
+    if (!user.isActive) {
+      console.log(`Usuário inativo: ${email}`);
+      res.status(401).json({ error: 'Conta inativa' });
       return;
     }
 
