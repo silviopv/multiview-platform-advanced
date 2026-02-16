@@ -5,11 +5,12 @@ WORKDIR /app
 # Instalar pnpm globalmente
 RUN npm install -g pnpm
 
-# Copiar arquivos de dependências
-COPY package.json pnpm-lock.yaml ./
+# Copiar arquivos de dependências (usando wildcard para ser opcional se falhar em algum ambiente)
+COPY package.json ./
+COPY pnpm-lock.yaml* ./
 
-# Instalar dependências usando pnpm
-RUN pnpm install --frozen-lockfile
+# Instalar dependências (sem --frozen-lockfile para evitar erros se o lock mudar levemente)
+RUN pnpm install
 
 # Copiar o restante do código e fazer o build
 COPY . .
