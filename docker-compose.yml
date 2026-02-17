@@ -8,8 +8,8 @@ services:
     image: nginx:alpine
     container_name: multiview-nginx
     ports:
-      - "7000:80"
-      - "7443:443"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
@@ -48,7 +48,7 @@ services:
       - JWT_REFRESH_EXPIRATION=7d
       - PORT=3001
       - NODE_ENV=production
-      - CORS_ORIGIN=http://localhost,http://103.199.185.49:7000,http://${DOMAIN:-localhost}
+      - CORS_ORIGIN=http://localhost,https://${DOMAIN:-localhost}
       - RECORDINGS_PATH=/app/recordings
       - S3_BUCKET=${S3_BUCKET:-}
       - S3_REGION=${S3_REGION:-}
